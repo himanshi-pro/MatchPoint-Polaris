@@ -738,8 +738,8 @@
 
      ⚠️ SETUP REQUIRED: paste your deployed Apps Script Web App URL below.
      See APPS_SCRIPT_SETUP.md for the exact code to deploy and where to get this URL. */
-  const SHORTLIST_API_URL = "https://script.google.com/macros/s/AKfycbzsp1hfD-6eoJbyIdhCsTxDwUk6OxolRyD6OCRsdd5VqiNWfZF0n21TlKZmUPGHP9uG/exec";
-
+  const SHORTLIST_API_URL = "https://script.google.com/macros/s/AKfycbyWUT0Bv0QPaFoM0MK6g_1spXNFW768GzW64VpLxsu1HRoonbCkL48HH2HrJkjegS9j/exec";
+                            
   const COMPANY_PREF_KEY = "polaris_r3_current_company";
 
   let shortlists = {}; // { studentId: [companyName, ...] } — currently active only
