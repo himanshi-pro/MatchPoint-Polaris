@@ -39,6 +39,7 @@ body{
 #loading-screen p{font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.06em; opacity:0.75;}
 #loading-screen .welcome-title{
   font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; margin:0;
+  padding:0 20px; text-align:center;
 }
 #loading-screen .welcome-title .brand-accent{ color: var(--amber); }
 #loading-screen .welcome-sub{
@@ -151,6 +152,7 @@ table.shortlist-table{
   position:fixed; inset:0; background: var(--navy);
   display:flex; align-items:center; justify-content:center; z-index:500;
   padding:24px; opacity:1; transition: opacity 0.35s ease;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
 .identity-overlay.hidden{ opacity:0; pointer-events:none; }
 .identity-card{
@@ -425,6 +427,14 @@ html, body{ overflow-x:hidden; max-width:100%; }
 @media (max-width:640px){
   .page{ padding:18px 14px 56px; }
   .identity-grid{ grid-template-columns: 1fr; }
+
+  /* When the company list makes the card taller than the viewport,
+     centering it vertically pushes the "Who are you?" heading off
+     the top with no way to scroll up to it. Anchor to the top and
+     give the card its own top/bottom margin instead — the overlay's
+     overflow-y:auto then lets it scroll like a normal page. */
+  .identity-overlay{ align-items:flex-start; padding:24px 16px; }
+  .identity-card{ margin:12px auto; }
 
   /* Toolbar: stack search + sort full width so both are easy to tap. */
   .toolbar{ flex-direction:column; align-items:stretch; }
