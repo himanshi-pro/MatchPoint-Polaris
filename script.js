@@ -509,107 +509,126 @@
       .concat(cats["Cloud"].slice(0, 2));
     topSkills = topSkills.slice(0, 8);
 
-    var paragraphs = [];
+    var bullets = [];
     
-    // ===== PARAGRAPH 1: Foundation & Background =====
+    // 1. Background & Foundation
     var programName = student.program || "engineering";
     var article = /^[aeiou]/i.test(programName) ? "an" : "a";
-    var intro = name + " is " + article + " " + programName + " student at " + (student.university || "their university");
+    var backgroundBullet = name + " is " + article + " " + programName + " student at " + (student.university || "their university");
     if (student.gradYear){
-      intro += ", graduating in " + student.gradYear + ".";
-    } else {
-      intro += ".";
+      backgroundBullet += ", graduating in " + student.gradYear;
     }
-    
-    if (student.categories && student.categories.length){
-      intro += " Their academic focus spans " + joinNatural(student.categories) + ", which shapes their project choices and career direction.";
-    }
-    paragraphs.push(intro);
+    backgroundBullet += ". This foundation has allowed them to develop expertise across multiple technical domains and demonstrate consistent growth.";
+    bullets.push("• " + backgroundBullet);
 
-    // ===== PARAGRAPH 2: Technical Foundation =====
+    // 2. Technical Skills & Expertise
     if (topSkills.length){
-      var techPara = "On the technical side, they have built expertise in " + joinNatural(topSkills.slice(0, 4)) + ".";
+      var skillsBullet = "They possess hands-on expertise in " + joinNatural(topSkills.slice(0, 4)) + ", which forms the core of their technical toolkit.";
       if (topSkills.length > 4){
-        techPara += " Beyond these core areas, they're also familiar with " + joinNatural(topSkills.slice(4)) + ".";
+        skillsBullet += " Beyond these primary skills, they have also explored and worked with " + joinNatural(topSkills.slice(4)) + ", demonstrating breadth and adaptability.";
       }
-      paragraphs.push(techPara);
+      skillsBullet += " This diverse skill set enables them to tackle projects that require multiple technologies and approaches.";
+      bullets.push("• " + skillsBullet);
     }
 
-    // ===== PARAGRAPH 3: Achievements & Impact =====
-    var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
-    var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 6).map(function(h){ return h.text; });
-    
-    var achievementParts = [];
-    if (chosen.length > 0){
-      achievementParts.push("They stand out for " + joinNatural(chosen.slice(0, Math.min(3, chosen.length))));
-      if (chosen.length > 3){
-        achievementParts.push(", and have also demonstrated strength in " + joinNatural(chosen.slice(3)));
-      }
+    // 3. Domain Focus & Academic Interests
+    if (student.categories && student.categories.length){
+      var focusBullet = "Their focused interest in " + joinNatural(student.categories) + " shapes their project selection and career aspirations.";
+      focusBullet += " This specialization indicates they're not just learning technologies, but developing expertise in meaningful problem spaces.";
+      bullets.push("• " + focusBullet);
     }
+
+    // 4-5. Technical Achievements & Highlights
+    var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
+    var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 8).map(function(h){ return h.text; });
     
-    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 250) : "";
+    if (chosen.length >= 3){
+      var achieveBullet1 = "They have demonstrated significant achievements including " + joinNatural(chosen.slice(0, 3)) + ".";
+      achieveBullet1 += " These accomplishments showcase their ability to deliver results and engage with real-world technical challenges.";
+      bullets.push("• " + achieveBullet1);
+      
+      if (chosen.length > 3){
+        var achieveBullet2 = "Additionally, their experience extends to " + joinNatural(chosen.slice(3, Math.min(6, chosen.length))) + ".";
+        achieveBullet2 += " This breadth of experience indicates they can quickly adapt to new domains and apply their learning effectively.";
+        bullets.push("• " + achieveBullet2);
+      }
+    } else if (chosen.length > 0){
+      var achieveBullet = "They stand out for " + joinNatural(chosen) + ", demonstrating their ability to excel in diverse technical areas.";
+      bullets.push("• " + achieveBullet);
+    }
+
+    // 6. Proud Achievement / Most Significant Work
+    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 280) : "";
     if (proudAchievementClause){
       var loweredProud = proudAchievementClause.charAt(0).toLowerCase() + proudAchievementClause.slice(1);
-      if (achievementParts.length > 0){
-        achievementParts[achievementParts.length - 1] += ".";
-        achievementParts.push("A particularly proud achievement is that " + loweredProud);
-      } else {
-        achievementParts.push("They take pride in the fact that " + loweredProud);
-      }
-    }
-    
-    if (achievementParts.length > 0){
-      paragraphs.push(achievementParts.join("") + ".");
+      var proudBullet = "They take particular pride in the achievement where " + loweredProud + ".";
+      proudBullet += " This work demonstrates their ability to identify important problems and execute solutions that create real value.";
+      bullets.push("• " + proudBullet);
     }
 
-    // ===== PARAGRAPH 4: Project Experience & Learning =====
-    var projectParts = [];
-    
-    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 250) : "";
+    // 7. Best Project & Project Design Thinking
+    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 280) : "";
     if (bestProjectClause){
-      projectParts.push("Their best project work demonstrates " + bestProjectClause.charAt(0).toLowerCase() + bestProjectClause.slice(1));
+      var loweredBest = bestProjectClause.charAt(0).toLowerCase() + bestProjectClause.slice(1);
+      var projectBullet = "Their best project work involved building something where " + loweredBest + ".";
+      projectBullet += " This demonstrates not just technical execution, but thoughtful project design and understanding of user needs.";
+      bullets.push("• " + projectBullet);
     }
-    
-    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 250) : "";
+
+    // 8. Repository & Code Understanding
+    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 280) : "";
     if (repoExplainClause){
-      if (projectParts.length > 0){
-        projectParts[projectParts.length - 1] += ".";
-        projectParts.push("Looking at their repositories, you'll find " + repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1));
-      } else {
-        projectParts.push("Their repository work showcases " + repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1));
-      }
-    }
-    
-    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 250) : "";
-    if (selfTaughtClause){
-      if (projectParts.length > 0){
-        projectParts[projectParts.length - 1] += ".";
-        projectParts.push("When learning new technologies, " + selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1));
-      } else {
-        projectParts.push("They master new tools by " + selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1));
-      }
-    }
-    
-    if (projectParts.length > 0){
-      paragraphs.push(projectParts.join("") + ".");
+      var loweredRepo = repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1);
+      var repoBullet = "Looking at their code and repositories reveals that " + loweredRepo + ".";
+      repoBullet += " This indicates they think deeply about code organization, maintainability, and best practices.";
+      bullets.push("• " + repoBullet);
     }
 
-    // ===== PARAGRAPH 5: Problem-Solving & Debugging =====
-    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 250) : "";
+    // 9. Problem-Solving & Debugging Approach
+    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 280) : "";
     if (debugStoryClause){
-      var debugPara = "When facing challenges, " + debugStoryClause.charAt(0).toLowerCase() + debugStoryClause.slice(1) + ". This demonstrates their ability to think systematically and persist through difficult problems.";
-      paragraphs.push(debugPara);
+      var loweredDebug = debugStoryClause.charAt(0).toLowerCase() + debugStoryClause.slice(1);
+      var debugBullet = "When faced with difficult technical problems, their approach is that " + loweredDebug + ".";
+      debugBullet += " This demonstrates systematic thinking, persistence, and the ability to learn from failures—critical traits for any engineer.";
+      bullets.push("• " + debugBullet);
     }
 
-    // ===== PARAGRAPH 6: Motivation & Vision =====
-    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 250) : "";
+    // 10. Self-Teaching & Learning Ability
+    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 280) : "";
+    if (selfTaughtClause){
+      var loweredSelf = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
+      var selfBullet = "They demonstrate strong self-learning capabilities, as evidenced by the fact that " + loweredSelf + ".";
+      selfBullet += " This ability to independently acquire new skills is invaluable in a rapidly evolving tech landscape.";
+      bullets.push("• " + selfBullet);
+    }
+
+    // 11. Fellowship Motivation & Career Direction
+    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 280) : "";
     if (whyFellowshipClause){
       var loweredWhy = whyFellowshipClause.charAt(0).toLowerCase() + whyFellowshipClause.slice(1);
-      var motPara = "Beyond technical skills, they came to this fellowship because " + loweredWhy + ". This motivation suggests they're seeking meaningful growth and real-world impact.";
-      paragraphs.push(motPara);
+      var motBullet = "They joined this fellowship because " + loweredWhy + ".";
+      motBullet += " This motivation suggests they're intentional about their career growth and seek opportunities that align with their values and goals.";
+      bullets.push("• " + motBullet);
     }
 
-    return paragraphs.join(" ").trim();
+    // 12. Fallback: Technical Complementarity
+    if (topSkills.length >= 2 && bullets.length < 8){
+      var techFitBullet = "They have built a solid technical foundation in " + topSkills.slice(0, 2).join(" and ") + ".";
+      techFitBullet += " This combination of skills positions them well for roles that require a blend of backend and frontend development, or systems work.";
+      bullets.push("• " + techFitBullet);
+    }
+
+    // 13. Links & Online Presence
+    var links = [];
+    if (student.linkedin) links.push("LinkedIn");
+    if (student.github) links.push("GitHub");
+    if (student.portfolio) links.push("Portfolio");
+    if (links.length > 0){
+      var linkBullet = "They maintain an active online presence with " + joinNatural(links) + ", where you can see more of their work and professional background.";
+      bullets.push("• " + linkBullet);
+    }
+
+    return bullets.join("\n").trim();
   }
 
   /** Third-person, lead-stripped experience bullets — not verbatim first-person quotes. */
