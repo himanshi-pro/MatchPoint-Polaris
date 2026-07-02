@@ -523,29 +523,40 @@
       parts.push("They're focused on " + joinNatural(student.categories) + ".");
     }
 
-    // Prefer hard technical signals (hackathons, internships, OSS, research...) over soft ones
-    // (leadership, mentoring) when picking what to call out — falls back to whatever's matched
-    // only if nothing tech-specific was found.
     var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
     var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 4).map(function(h){ return h.text; });
     if (chosen.length){
       parts.push("They stand out for " + joinNatural(chosen) + ".");
     }
 
-    // Clean, tech-focused closer built from their own project description — never the raw
-    // validation-reason shorthand (which reads like reviewer notes, not a sentence).
-    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 110) : "";
+    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 180) : "";
+    if (proudAchievementClause){
+      var lowered = proudAchievementClause.charAt(0).toLowerCase() + proudAchievementClause.slice(1);
+      parts.push("A notable achievement is that " + lowered + ".");
+    }
+
+    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 180) : "";
     if (bestProjectClause){
       parts.push("Best known for building " + bestProjectClause + ".");
     } else if (topSkills.length >= 2){
       parts.push("A solid technical fit for teams working with " + topSkills.slice(0, 2).join(" and ") + ".");
     }
 
-    // A short line on how they learn/grow technically, when they've described that.
-    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 100) : "";
+    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 180) : "";
+    if (repoExplainClause){
+      var loweredRepo = repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1);
+      parts.push("Their repository highlights " + loweredRepo + ".");
+    }
+
+    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 180) : "";
+    if (debugStoryClause){
+      parts.push(debugStoryClause + ".");
+    }
+
+    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 180) : "";
     if (selfTaughtClause){
-      var lowered = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
-      parts.push("On picking up new tools quickly: " + lowered + ".");
+      var loweredSelf = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
+      parts.push("They learn quickly through " + loweredSelf + ".");
     }
 
     return parts.join(" ").trim();
