@@ -62,7 +62,7 @@ body{
   background: radial-gradient(circle, rgba(232,163,61,0.25), transparent 70%);
 }
 .topbar-inner{
-  max-width:min(1680px, 94vw); margin:0 auto; position:relative; z-index:1;
+  margin:0 auto; position:relative; z-index:1;
   display:flex; flex-direction:column; gap:16px;
 }
 .brand-row{
@@ -90,7 +90,7 @@ body{
 .exit-link:hover{ background: rgba(178,58,46,0.25); color:#fff; border-color: rgba(178,58,46,0.5); }
 
 /* ===== Layout ===== */
-.page{ max-width:min(1680px, 94vw); margin:0 auto; padding: 26px 28px 70px; }
+.page{ padding: 26px 28px 70px; }
 
 .section-heading{
   display:flex; align-items:baseline; justify-content:space-between; gap:14px;
@@ -106,23 +106,9 @@ body{
 
 /* ===== Shortlist matrix table ===== */
 .table-wrap{
-  border:1px solid var(--line); border-radius: var(--radius); overflow:auto;
-  max-height: 620px;
-  /* Scroll shadow: a soft fade shows at the top/bottom edges whenever
-     there's more content to scroll to, and fades away on its own once
-     you actually reach that edge — pure CSS, no JS/markup needed.
-     background-attachment:local scrolls the "cover" layers with the
-     content so they only show at the true start/end; the two
-     radial-gradient "shadow" layers stay pinned via `scroll`. */
-  background:
-    linear-gradient(#fff 30%, rgba(255,255,255,0)) center top,
-    linear-gradient(rgba(255,255,255,0), #fff 70%) center bottom,
-    radial-gradient(farthest-side at 50% 0, rgba(18,23,43,0.18), rgba(18,23,43,0)) center top,
-    radial-gradient(farthest-side at 50% 100%, rgba(18,23,43,0.18), rgba(18,23,43,0)) center bottom;
-  background-repeat: no-repeat;
-  background-color: #fff;
-  background-size: 100% 36px, 100% 36px, 100% 14px, 100% 14px;
-  background-attachment: local, local, scroll, scroll;
+  border:1px solid var(--line); border-radius: var(--radius);
+  overflow-x:auto; overflow-y:visible;
+  background:#fff;
 }
 table.shortlist-table{
   border-collapse:separate; border-spacing:0; width:100%; min-width:520px;
@@ -314,6 +300,18 @@ table.shortlist-table{
 .dossier-uni{ font-size:14.5px; color: rgba(247,245,239,0.7); margin:0; }
 .dossier-body{ padding:28px 26px 60px; display:flex; flex-direction:column; gap:24px; max-width:760px; margin:0 auto; width:100%; }
 
+/* Section order within the profile: Contact & Details -> Links ->
+   Key Highlights -> Technical Skills -> Professional Summary (last).
+   Each .field-group is matched by the distinct class of the content
+   it wraps, so this works without touching the markup. Anything not
+   matched below (e.g. the shortlist box) keeps the default order:0
+   and stays ahead of these. */
+.field-group:has(.contact-rows)   { order:1; }
+.field-group:has(.link-buttons)   { order:2; }
+.field-group:has(.highlight-list) { order:3; }
+.field-group:has(.skill-groups)   { order:4; }
+.field-group:has(.summary-text)   { order:5; }
+
 .dossier-shortlist-box{
   background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px;
   display:flex; flex-direction:column; gap:10px;
@@ -463,8 +461,10 @@ html, body{ overflow-x:hidden; max-width:100%; }
   /* Matrix table: the horizontal scroll stays (it's a wide company x
      candidate grid by nature), but tighter padding/font means more
      columns are visible before scrolling is needed, and momentum
-     scrolling makes the scroll itself feel native on iOS. */
-  .table-wrap{ max-height:70vh; -webkit-overflow-scrolling:touch; }
+     scrolling makes the horizontal scroll itself feel native on iOS.
+     No vertical max-height here — the table scrolls with the page,
+     not in its own nested scroll container. */
+  .table-wrap{ -webkit-overflow-scrolling:touch; }
   .shortlist-table th, .shortlist-table td{ padding:10px 12px; font-size:12.5px; }
   .shortlist-table td.name-col, .shortlist-table th.name-col{ min-width:140px; }
 
