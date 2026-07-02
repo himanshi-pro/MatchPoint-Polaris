@@ -512,51 +512,55 @@
     var parts = [];
     var programName = student.program || "engineering";
     var article = /^[aeiou]/i.test(programName) ? "an" : "a";
-    parts.push(name + " is " + article + " " + programName + " student at " + (student.university || "their university") +
+    parts.push("• " + name + " is " + article + " " + programName + " student at " + (student.university || "their university") +
       (student.gradYear ? (", graduating in " + student.gradYear) : "") + ".");
 
     if (topSkills.length){
-      parts.push("Their technical toolkit spans " + joinNatural(topSkills) + ".");
+      parts.push("• Their technical toolkit spans " + joinNatural(topSkills) + ".");
     }
 
     if (student.categories && student.categories.length){
-      parts.push("They're focused on " + joinNatural(student.categories) + ".");
+      parts.push("• They are focused on " + joinNatural(student.categories) + ".");
     }
 
     var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
     var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 4).map(function(h){ return h.text; });
     if (chosen.length){
-      parts.push("They stand out for " + joinNatural(chosen) + ".");
+      parts.push("• They stand out for " + joinNatural(chosen) + ".");
     }
 
     var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 180) : "";
     if (proudAchievementClause){
       var lowered = proudAchievementClause.charAt(0).toLowerCase() + proudAchievementClause.slice(1);
-      parts.push("A notable achievement is that " + lowered + ".");
+      parts.push("• A notable achievement is that " + lowered + ".");
     }
 
     var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 180) : "";
     if (bestProjectClause){
-      parts.push("Best known for building " + bestProjectClause + ".");
-    } else if (topSkills.length >= 2){
-      parts.push("A solid technical fit for teams working with " + topSkills.slice(0, 2).join(" and ") + ".");
+      parts.push("• Best known for building " + bestProjectClause + ".");
     }
 
     var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 180) : "";
     if (repoExplainClause){
       var loweredRepo = repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1);
-      parts.push("Their repository highlights " + loweredRepo + ".");
+      parts.push("• Their repository explains " + loweredRepo + ".");
     }
 
     var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 180) : "";
     if (debugStoryClause){
-      parts.push(debugStoryClause + ".");
+      parts.push("• " + debugStoryClause + ".");
     }
 
     var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 180) : "";
     if (selfTaughtClause){
       var loweredSelf = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
-      parts.push("They learn quickly through " + loweredSelf + ".");
+      parts.push("• They learn quickly through " + loweredSelf + ".");
+    }
+
+    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 180) : "";
+    if (whyFellowshipClause){
+      var loweredWhy = whyFellowshipClause.charAt(0).toLowerCase() + whyFellowshipClause.slice(1);
+      parts.push("• They joined this fellowship because " + loweredWhy + ".");
     }
 
     return parts.join(" ").trim();
