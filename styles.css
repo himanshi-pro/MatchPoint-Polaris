@@ -383,7 +383,110 @@ table.shortlist-table{
 }
 .story-block p{ font-size:13px; line-height:1.6; color:#333; margin:0; white-space:pre-wrap; }
 
+/* =========================================================
+   RESPONSIVE / MOBILE ENHANCEMENTS
+   Mobile-first overrides layered on top of the desktop styles
+   above — nothing here changes desktop/tablet appearance.
+   Breakpoints: 900px (tablet), 640px (large phone),
+   480px (phone), 360px (small phone).
+   ========================================================= */
+
+/* Safety net: never allow the page itself to scroll horizontally.
+   The shortlist matrix table still scrolls sideways inside its own
+   .table-wrap container by design — that's intentional, not a bug. */
+html, body{ overflow-x:hidden; max-width:100%; }
+
+/* Fluid type for the biggest headline elements, so long text never
+   forces overflow on narrow phones. Has no visible effect at desktop
+   widths since clamp() just returns the max value there. */
+.brand-title{ font-size: clamp(19px, 5.4vw, 26px); }
+#loading-screen .welcome-title{ font-size: clamp(21px, 6vw, 28px); }
+.dossier-name{ font-size: clamp(22px, 6vw, 30px); }
+.identity-card h2{ font-size: clamp(19px, 5vw, 23px); }
+
+/* Slightly larger tap targets on touch devices only — desktop mouse
+   users see no change. */
+@media (hover:none) and (pointer:coarse){
+  .identity-btn, .shortlist-btn, .link-btn, .co-chip, .exit-link, .help-fab{
+    min-height:44px;
+  }
+  .shortlist-table td.check-cell{ min-width:44px; }
+}
+
+/* ---------- Tablets and below (<=900px) ---------- */
+@media (max-width:900px){
+  .topbar{ padding:18px 20px 16px; }
+  .page{ padding:22px 18px 60px; }
+  .dossier-head{ padding:30px 20px 26px; }
+  .dossier-body{ padding:24px 20px 50px; gap:20px; }
+}
+
+/* ---------- Large phones / small tablets (<=640px) ---------- */
 @media (max-width:640px){
-  .page{ padding: 20px 16px 60px; }
+  .page{ padding:18px 14px 56px; }
   .identity-grid{ grid-template-columns: 1fr; }
+
+  /* Toolbar: stack search + sort full width so both are easy to tap. */
+  .toolbar{ flex-direction:column; align-items:stretch; }
+  .search-input, .sort-select{ width:100%; min-width:0; }
+
+  /* iOS Safari zooms the whole page in when a focused input's font-size
+     is under 16px — bumping these to 16px on small screens prevents
+     that jarring zoom-on-tap. */
+  .search-input, .sort-select{ font-size:16px; }
+
+  /* Matrix table: the horizontal scroll stays (it's a wide company x
+     candidate grid by nature), but tighter padding/font means more
+     columns are visible before scrolling is needed, and momentum
+     scrolling makes the scroll itself feel native on iOS. */
+  .table-wrap{ max-height:70vh; -webkit-overflow-scrolling:touch; }
+  .shortlist-table th, .shortlist-table td{ padding:10px 12px; font-size:12.5px; }
+  .shortlist-table td.name-col, .shortlist-table th.name-col{ min-width:140px; }
+
+  .dossier-head{ padding:26px 18px 22px; }
+  .dossier-close{ top:14px; right:14px; width:40px; height:40px; font-size:15px; }
+  .dossier-name{ margin-right:34px; }
+  .dossier-body{ padding:20px 16px 44px; gap:18px; }
+  .field-group{ padding:15px 16px; }
+
+  /* Contact rows: stack label above value instead of a fixed-width
+     label column, which gets cramped once the screen narrows. */
+  .contact-row{ flex-direction:column; gap:2px; }
+  .contact-row .k{ min-width:0; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; }
+
+  .dossier-shortlist-top{ flex-direction:column; align-items:stretch; gap:10px; }
+  .shortlist-btn{ width:100%; text-align:center; }
+
+  .link-buttons{ flex-direction:column; }
+  .link-btn{ width:100%; justify-content:center; }
+
+  .welcome-toast{ max-width:calc(100% - 32px); text-align:center; }
+  .help-fab{ bottom: calc(16px + env(safe-area-inset-bottom)); right:16px; }
+}
+
+/* ---------- Phones (<=480px) ---------- */
+@media (max-width:480px){
+  .topbar{ padding:16px 14px 14px; }
+  .brand-row{ gap:8px; }
+  .company-greeting{ font-size:13px; }
+
+  .identity-card{ padding:26px 20px; }
+  .identity-btn{ padding:12px 10px; font-size:13.5px; }
+
+  .section-heading h2{ font-size:17px; }
+  .section-heading .sub{ font-size:11.5px; }
+
+  .shortlist-table th, .shortlist-table td{ padding:9px 10px; font-size:12px; }
+  .shortlist-table td.name-col, .shortlist-table th.name-col{ min-width:120px; }
+
+  .dossier-eyebrow{ font-size:10px; }
+  .field-group h3{ font-size:10.5px; }
+  .summary-text, .experience-list li, .story-block p{ font-size:13px; }
+}
+
+/* ---------- Very small phones (<=360px) ---------- */
+@media (max-width:360px){
+  .brand-title{ font-size:18px; }
+  .identity-grid{ gap:8px; }
+  .shortlist-table th, .shortlist-table td{ padding:8px; font-size:11.5px; }
 }
