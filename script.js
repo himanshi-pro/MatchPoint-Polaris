@@ -509,95 +509,107 @@
       .concat(cats["Cloud"].slice(0, 2));
     topSkills = topSkills.slice(0, 8);
 
-    var pointers = [];
+    var paragraphs = [];
     
-    // 1. Basic profile
+    // ===== PARAGRAPH 1: Foundation & Background =====
     var programName = student.program || "engineering";
     var article = /^[aeiou]/i.test(programName) ? "an" : "a";
-    pointers.push("• " + name + " is " + article + " " + programName + " student at " + (student.university || "their university") +
-      (student.gradYear ? (", graduating in " + student.gradYear) : "") + ".");
-
-    // 2. Tech toolkit
-    if (topSkills.length){
-      pointers.push("• Technical expertise: " + joinNatural(topSkills) + ".");
+    var intro = name + " is " + article + " " + programName + " student at " + (student.university || "their university");
+    if (student.gradYear){
+      intro += ", graduating in " + student.gradYear + ".";
+    } else {
+      intro += ".";
     }
-
-    // 3. Focus areas
+    
     if (student.categories && student.categories.length){
-      pointers.push("• Domain focus: " + joinNatural(student.categories) + ".");
+      intro += " Their academic focus spans " + joinNatural(student.categories) + ", which shapes their project choices and career direction.";
+    }
+    paragraphs.push(intro);
+
+    // ===== PARAGRAPH 2: Technical Foundation =====
+    if (topSkills.length){
+      var techPara = "On the technical side, they have built expertise in " + joinNatural(topSkills.slice(0, 4)) + ".";
+      if (topSkills.length > 4){
+        techPara += " Beyond these core areas, they're also familiar with " + joinNatural(topSkills.slice(4)) + ".";
+      }
+      paragraphs.push(techPara);
     }
 
-    // 4-5. Technical highlights (split into multiple pointers if available)
+    // ===== PARAGRAPH 3: Achievements & Impact =====
     var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
     var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 6).map(function(h){ return h.text; });
-    if (chosen.length >= 2){
-      pointers.push("• Key achievements: " + joinNatural(chosen.slice(0, 3)) + ".");
+    
+    var achievementParts = [];
+    if (chosen.length > 0){
+      achievementParts.push("They stand out for " + joinNatural(chosen.slice(0, Math.min(3, chosen.length))));
       if (chosen.length > 3){
-        pointers.push("• Additional highlights: " + joinNatural(chosen.slice(3)) + ".");
+        achievementParts.push(", and have also demonstrated strength in " + joinNatural(chosen.slice(3)));
       }
-    } else if (chosen.length === 1){
-      pointers.push("• Notable achievement: " + chosen[0] + ".");
     }
-
-    // 6. Proud achievement — use aggressively
-    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 200) : "";
+    
+    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 250) : "";
     if (proudAchievementClause){
-      pointers.push("• Proud achievement: " + proudAchievementClause + ".");
+      var loweredProud = proudAchievementClause.charAt(0).toLowerCase() + proudAchievementClause.slice(1);
+      if (achievementParts.length > 0){
+        achievementParts[achievementParts.length - 1] += ".";
+        achievementParts.push("A particularly proud achievement is that " + loweredProud);
+      } else {
+        achievementParts.push("They take pride in the fact that " + loweredProud);
+      }
+    }
+    
+    if (achievementParts.length > 0){
+      paragraphs.push(achievementParts.join("") + ".");
     }
 
-    // 7. Best project — use aggressively
-    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 200) : "";
+    // ===== PARAGRAPH 4: Project Experience & Learning =====
+    var projectParts = [];
+    
+    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 250) : "";
     if (bestProjectClause){
-      pointers.push("• Best project: Built " + bestProjectClause + ".");
+      projectParts.push("Their best project work demonstrates " + bestProjectClause.charAt(0).toLowerCase() + bestProjectClause.slice(1));
     }
-
-    // 8. Repository explanation — use aggressively
-    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 200) : "";
+    
+    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 250) : "";
     if (repoExplainClause){
-      var loweredRepo = repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1);
-      pointers.push("• Repository insights: " + loweredRepo + ".");
+      if (projectParts.length > 0){
+        projectParts[projectParts.length - 1] += ".";
+        projectParts.push("Looking at their repositories, you'll find " + repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1));
+      } else {
+        projectParts.push("Their repository work showcases " + repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1));
+      }
     }
-
-    // 9. Debug story — use aggressively
-    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 200) : "";
-    if (debugStoryClause){
-      pointers.push("• Problem-solving approach: " + debugStoryClause + ".");
-    }
-
-    // 10. Self-taught / learning style
-    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 200) : "";
+    
+    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 250) : "";
     if (selfTaughtClause){
-      var loweredSelf = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
-      pointers.push("• Self-learning capability: " + loweredSelf + ".");
+      if (projectParts.length > 0){
+        projectParts[projectParts.length - 1] += ".";
+        projectParts.push("When learning new technologies, " + selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1));
+      } else {
+        projectParts.push("They master new tools by " + selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1));
+      }
+    }
+    
+    if (projectParts.length > 0){
+      paragraphs.push(projectParts.join("") + ".");
     }
 
-    // 11. Why fellowship
-    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 200) : "";
+    // ===== PARAGRAPH 5: Problem-Solving & Debugging =====
+    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 250) : "";
+    if (debugStoryClause){
+      var debugPara = "When facing challenges, " + debugStoryClause.charAt(0).toLowerCase() + debugStoryClause.slice(1) + ". This demonstrates their ability to think systematically and persist through difficult problems.";
+      paragraphs.push(debugPara);
+    }
+
+    // ===== PARAGRAPH 6: Motivation & Vision =====
+    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 250) : "";
     if (whyFellowshipClause){
       var loweredWhy = whyFellowshipClause.charAt(0).toLowerCase() + whyFellowshipClause.slice(1);
-      pointers.push("• Fellowship motivation: " + loweredWhy + ".");
+      var motPara = "Beyond technical skills, they came to this fellowship because " + loweredWhy + ". This motivation suggests they're seeking meaningful growth and real-world impact.";
+      paragraphs.push(motPara);
     }
 
-    // 12. Fallback: technical fit or additional skill summary
-    if (topSkills.length >= 2 && pointers.length < 10){
-      pointers.push("• Core technical strengths: Solid foundation in " + topSkills.slice(0, 2).join(" and ") + ".");
-    }
-
-    // 13. Link to projects (if available)
-    if (student.repoLink){
-      pointers.push("• Project repository: " + student.repoLink + ".");
-    }
-
-    // 14. LinkedIn / GitHub (if available)
-    var links = [];
-    if (student.linkedin) links.push("LinkedIn");
-    if (student.github) links.push("GitHub");
-    if (student.portfolio) links.push("Portfolio");
-    if (links.length > 0){
-      pointers.push("• Connected via: " + joinNatural(links) + ".");
-    }
-
-    return pointers.join("\n").trim();
+    return paragraphs.join(" ").trim();
   }
 
   /** Third-person, lead-stripped experience bullets — not verbatim first-person quotes. */
