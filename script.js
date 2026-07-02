@@ -828,7 +828,7 @@
     } catch (e) { /* ignore */ }
   }
 
-  /** Call on any real user interaction to keep the 30-minute session alive. */
+  /** Call on this  any real user interaction to keep the 30-minute session alive. */
   let lastActivityWrite = 0;
   function touchActivity(){
     if (!currentCompany) return;
@@ -1150,10 +1150,11 @@
           <div class="link-buttons">${linkButtons}</div>
         </div>` : ""}
 
-        ${skillGroups ? `
+        ${a.summary ? `
         <div class="field-group">
-          <h3>Technical Skills</h3>
-          <div class="skill-groups">${skillGroups}</div>
+          <h3>Professional Summary</h3>
+          <p class="summary-text">${escapeHtml(a.summary)}</p>
+          ${categoryChips ? `<div class="tag-row" style="margin-top:10px;">${categoryChips}</div>` : ""}
         </div>` : ""}
 
         ${highlightItems ? `
@@ -1162,11 +1163,10 @@
           <div class="highlight-list">${highlightItems}</div>
         </div>` : ""}
 
-        ${a.summary ? `
+        ${skillGroups ? `
         <div class="field-group">
-          <h3>Professional Summary</h3>
-          <p class="summary-text">${escapeHtml(a.summary)}</p>
-          ${categoryChips ? `<div class="tag-row" style="margin-top:10px;">${categoryChips}</div>` : ""}
+          <h3>Technical Skills</h3>
+          <div class="skill-groups">${skillGroups}</div>
         </div>` : ""}
 
       </div>
