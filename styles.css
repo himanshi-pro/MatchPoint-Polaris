@@ -122,7 +122,7 @@ table.shortlist-table{
   letter-spacing:0.04em; text-transform:capitalize;
   border-bottom:none;
 }
-.shortlist-table thead th.name-col{ left:0; z-index:4; text-align:left; text-transform:none; }
+.shortlist-table thead th.name-col{ left:0; z-index:4; text-align:left; text-transform:none; background: var(--navy); color: var(--paper); }
 .shortlist-table thead th.me-col{ background: var(--amber-dark); color:#fff; }
 .shortlist-table td.name-col, .shortlist-table th.name-col{
   position:sticky; left:0; z-index:2;
