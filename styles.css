@@ -326,7 +326,7 @@ table.shortlist-table{
   text-transform:uppercase; color: var(--ink-soft); margin:0 0 10px;
 }
 
-.summary-text{ font-size:14px; line-height:1.65; color: var(--ink); margin:0; }
+.summary-text{ font-size:14px; line-height:1.65; color: var(--ink); margin:0; white-space: pre-wrap; word-wrap: break-word; }
 
 .tag-row{ display:flex; flex-wrap:wrap; gap:7px; }
 .tag-chip{

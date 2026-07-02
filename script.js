@@ -509,61 +509,95 @@
       .concat(cats["Cloud"].slice(0, 2));
     topSkills = topSkills.slice(0, 8);
 
-    var parts = [];
+    var pointers = [];
+    
+    // 1. Basic profile
     var programName = student.program || "engineering";
     var article = /^[aeiou]/i.test(programName) ? "an" : "a";
-    parts.push("• " + name + " is " + article + " " + programName + " student at " + (student.university || "their university") +
+    pointers.push("• " + name + " is " + article + " " + programName + " student at " + (student.university || "their university") +
       (student.gradYear ? (", graduating in " + student.gradYear) : "") + ".");
 
+    // 2. Tech toolkit
     if (topSkills.length){
-      parts.push("• Their technical toolkit spans " + joinNatural(topSkills) + ".");
+      pointers.push("• Technical expertise: " + joinNatural(topSkills) + ".");
     }
 
+    // 3. Focus areas
     if (student.categories && student.categories.length){
-      parts.push("• They are focused on " + joinNatural(student.categories) + ".");
+      pointers.push("• Domain focus: " + joinNatural(student.categories) + ".");
     }
 
+    // 4-5. Technical highlights (split into multiple pointers if available)
     var techFacts = factHighlights.filter(function(h){ return TECH_HIGHLIGHT_KEYS.indexOf(h.key) !== -1; });
-    var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 4).map(function(h){ return h.text; });
-    if (chosen.length){
-      parts.push("• They stand out for " + joinNatural(chosen) + ".");
+    var chosen = (techFacts.length ? techFacts : factHighlights).slice(0, 6).map(function(h){ return h.text; });
+    if (chosen.length >= 2){
+      pointers.push("• Key achievements: " + joinNatural(chosen.slice(0, 3)) + ".");
+      if (chosen.length > 3){
+        pointers.push("• Additional highlights: " + joinNatural(chosen.slice(3)) + ".");
+      }
+    } else if (chosen.length === 1){
+      pointers.push("• Notable achievement: " + chosen[0] + ".");
     }
 
-    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 180) : "";
+    // 6. Proud achievement — use aggressively
+    var proudAchievementClause = student.proudAchievement ? cleanSentence(toThirdPerson(stripLeadIn(student.proudAchievement)), 200) : "";
     if (proudAchievementClause){
-      var lowered = proudAchievementClause.charAt(0).toLowerCase() + proudAchievementClause.slice(1);
-      parts.push("• A notable achievement is that " + lowered + ".");
+      pointers.push("• Proud achievement: " + proudAchievementClause + ".");
     }
 
-    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 180) : "";
+    // 7. Best project — use aggressively
+    var bestProjectClause = student.bestProject ? cleanSentence(toThirdPerson(stripLeadIn(student.bestProject)), 200) : "";
     if (bestProjectClause){
-      parts.push("• Best known for building " + bestProjectClause + ".");
+      pointers.push("• Best project: Built " + bestProjectClause + ".");
     }
 
-    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 180) : "";
+    // 8. Repository explanation — use aggressively
+    var repoExplainClause = student.repoExplain ? cleanSentence(toThirdPerson(stripLeadIn(student.repoExplain)), 200) : "";
     if (repoExplainClause){
       var loweredRepo = repoExplainClause.charAt(0).toLowerCase() + repoExplainClause.slice(1);
-      parts.push("• Their repository explains " + loweredRepo + ".");
+      pointers.push("• Repository insights: " + loweredRepo + ".");
     }
 
-    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 180) : "";
+    // 9. Debug story — use aggressively
+    var debugStoryClause = student.debugStory ? cleanSentence(toThirdPerson(stripLeadIn(student.debugStory)), 200) : "";
     if (debugStoryClause){
-      parts.push("• " + debugStoryClause + ".");
+      pointers.push("• Problem-solving approach: " + debugStoryClause + ".");
     }
 
-    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 180) : "";
+    // 10. Self-taught / learning style
+    var selfTaughtClause = student.selfTaught ? cleanSentence(toThirdPerson(stripLeadIn(student.selfTaught)), 200) : "";
     if (selfTaughtClause){
       var loweredSelf = selfTaughtClause.charAt(0).toLowerCase() + selfTaughtClause.slice(1);
-      parts.push("• They learn quickly through " + loweredSelf + ".");
+      pointers.push("• Self-learning capability: " + loweredSelf + ".");
     }
 
-    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 180) : "";
+    // 11. Why fellowship
+    var whyFellowshipClause = student.whyFellowship ? cleanSentence(toThirdPerson(stripLeadIn(student.whyFellowship)), 200) : "";
     if (whyFellowshipClause){
       var loweredWhy = whyFellowshipClause.charAt(0).toLowerCase() + whyFellowshipClause.slice(1);
-      parts.push("• They joined this fellowship because " + loweredWhy + ".");
+      pointers.push("• Fellowship motivation: " + loweredWhy + ".");
     }
 
-    return parts.join(" ").trim();
+    // 12. Fallback: technical fit or additional skill summary
+    if (topSkills.length >= 2 && pointers.length < 10){
+      pointers.push("• Core technical strengths: Solid foundation in " + topSkills.slice(0, 2).join(" and ") + ".");
+    }
+
+    // 13. Link to projects (if available)
+    if (student.repoLink){
+      pointers.push("• Project repository: " + student.repoLink + ".");
+    }
+
+    // 14. LinkedIn / GitHub (if available)
+    var links = [];
+    if (student.linkedin) links.push("LinkedIn");
+    if (student.github) links.push("GitHub");
+    if (student.portfolio) links.push("Portfolio");
+    if (links.length > 0){
+      pointers.push("• Connected via: " + joinNatural(links) + ".");
+    }
+
+    return pointers.join("\n").trim();
   }
 
   /** Third-person, lead-stripped experience bullets — not verbatim first-person quotes. */
