@@ -5,6 +5,7 @@
   const SHEET_ID = "1gAIhAvT0c0oPIFrPKweJ6PkYFKa7kltg6P_pjd9_Igw";
   const STUDENTS_TAB = "Students";
   const COMPANIES_TAB = "Companies";
+  const EMAILS_TAB = "Emails"; // column A: email, column B: company (access control)
   const REFRESH_MS = 45000; // re-check the sheet for edits every 45s
 
   let jsonpCounter = 0;
@@ -81,6 +82,10 @@
               .replace(/\bAi\b/g, "AI");
   }
 
+  function normalizeEmail(str){
+    return String(str || "").trim().toLowerCase();
+  }
+
   function slug(str){
     return String(str || "").toLowerCase().trim()
       .replace(/[^a-z0-9]+/g, "-")
@@ -90,6 +95,7 @@
   /* ---------------- Field classification helpers ---------------- */
   let RAW_HEADERS = [];
   let COMPANIES = [];
+  let EMAIL_TO_COMPANY = {}; // { normalizedEmail: companyName } — the access list
   let NAME_KEY = null, UNIVERSITY_KEY = null, EMAIL_KEY = null, PHONE_KEY = null;
   let CONTACT_KEYS = [];
   // Semantic roles used by the analysis engine below — found by pattern, not hardcoded,
@@ -770,13 +776,15 @@
   }
 
   async function loadSheetData(){
-    const [studentsTable, companiesTable] = await Promise.all([
+    const [studentsTable, companiesTable, emailsTable] = await Promise.all([
       fetchTabViaJsonp(STUDENTS_TAB),
-      fetchTabViaJsonp(COMPANIES_TAB)
+      fetchTabViaJsonp(COMPANIES_TAB),
+      fetchTabViaJsonp(EMAILS_TAB)
     ]);
 
     const studentsParsed = tableToRows(studentsTable);
     const companiesParsed = tableToRows(companiesTable);
+    const emailsParsed = tableToRows(emailsTable);
 
     RAW_HEADERS = studentsParsed.fields || [];
     const RAW_STUDENTS = studentsParsed.data;
@@ -785,6 +793,19 @@
     COMPANIES = companiesParsed.data
       .map(r => (r[companyHeaderKey] || "").trim())
       .filter(Boolean);
+
+    // Build the email -> company access map from the Emails tab.
+    // Column A = email, Column B = company. Emails are normalized (lowercased,
+    // trimmed) so "Alice@X.com " matches "alice@x.com".
+    const emailFields = emailsParsed.fields || [];
+    const emailKey = emailFields[0];
+    const emailCompanyKey = emailFields[1];
+    EMAIL_TO_COMPANY = {};
+    emailsParsed.data.forEach(r => {
+      const email = normalizeEmail(r[emailKey]);
+      const company = (r[emailCompanyKey] || "").trim();
+      if (email && company) EMAIL_TO_COMPANY[email] = company;
+    });
 
     NAME_KEY = findHeader(/full ?name|^name$/i) || RAW_HEADERS[0];
     UNIVERSITY_KEY = findHeader(/university|institute|college/i);
@@ -820,10 +841,11 @@
      See APPS_SCRIPT_SETUP.md for the exact code to deploy and where to get this URL. */
   const SHORTLIST_API_URL = "https://script.google.com/macros/s/AKfycbyWUT0Bv0QPaFoM0MK6g_1spXNFW768GzW64VpLxsu1HRoonbCkL48HH2HrJkjegS9j/exec";
                             
-  const COMPANY_PREF_KEY = "polaris_r3_current_company";
+  const EMAIL_PREF_KEY = "polaris_r3_user_email";
 
   let shortlists = {}; // { studentId: [companyName, ...] } — currently active only
   let removedHistory = {}; // { studentId: [companyName, ...] } — shortlisted, then later removed
+  let currentEmail = null;
   let currentCompany = null;
   let backendReady = SHORTLIST_API_URL.indexOf("PASTE_YOUR") === -1;
 
@@ -877,20 +899,29 @@
     return null;
   }
 
+  /**
+   * Loads the saved email (if any) and resolves it to a company via the
+   * Emails tab. Returns true only if the saved email is still on the access
+   * list. If an email was removed from the sheet, or reassigned to a different
+   * company, that change takes effect on next load automatically.
+   */
   function loadCompanyPref(){
     try {
-      const v = localStorage.getItem(COMPANY_PREF_KEY);
-      if (v && COMPANIES.includes(v)) {
-        currentCompany = v;
+      const savedEmail = normalizeEmail(localStorage.getItem(EMAIL_PREF_KEY));
+      if (savedEmail && EMAIL_TO_COMPANY[savedEmail]) {
+        currentEmail = savedEmail;
+        currentCompany = EMAIL_TO_COMPANY[savedEmail];
         return true;
       }
+      // Saved email no longer authorized (removed from sheet) — clear it.
+      if (savedEmail) localStorage.removeItem(EMAIL_PREF_KEY);
     } catch (e) { /* localStorage unavailable (e.g. private mode) — identity just won't persist */ }
     return false;
   }
 
   function saveCompanyPref(){
     try {
-      localStorage.setItem(COMPANY_PREF_KEY, currentCompany);
+      localStorage.setItem(EMAIL_PREF_KEY, currentEmail || "");
     } catch (e) { /* ignore */ }
   }
 
@@ -941,29 +972,46 @@
     el.innerHTML = `<span class="wave">👋</span> Hello, <b>${escapeHtml(titleCase(currentCompany))}</b>`;
   }
 
-  /* ---------------- Identity gate + welcome toast ---------------- */
-  function renderIdentityGrid(){
-    const grid = document.getElementById("identity-grid");
-    grid.innerHTML = COMPANIES.map(c => `
-      <button class="identity-btn" data-company="${escapeHtml(c)}">
-        <span class="id-avatar">${escapeHtml(initials(titleCase(c)))}</span>
-        ${escapeHtml(titleCase(c))}
-      </button>
-    `).join("");
-    grid.querySelectorAll(".identity-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        chooseCompany(btn.getAttribute("data-company"));
+  /* ---------------- Email login gate ---------------- */
+  function wireIdentityGate(){
+    const form = document.getElementById("email-login-form");
+    if (form && !form.dataset.wired) {
+      form.dataset.wired = "1";
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        submitEmailLogin();
       });
-    });
+    }
+  }
+
+  function submitEmailLogin(){
+    const input = document.getElementById("email-input");
+    const email = normalizeEmail(input ? input.value : "");
+    const errEl = document.getElementById("email-error");
+
+    if (!email) {
+      if (errEl) errEl.textContent = "Please enter your email.";
+      return;
+    }
+    const company = EMAIL_TO_COMPANY[email];
+    if (!company) {
+      if (errEl) errEl.textContent = "This email doesn't have access. Please contact the Polaris team.";
+      return;
+    }
+    if (errEl) errEl.textContent = "";
+    logInAs(email, company);
   }
 
   function showIdentityGate(message){
     const sub = document.getElementById("identity-sub");
     if (sub) {
-      sub.textContent = message || "Select your company to see and manage its shortlist.";
+      sub.textContent = message || "Enter your email to access the dashboard.";
       sub.classList.toggle("timeout-notice", !!message);
     }
+    wireIdentityGate();
     document.getElementById("identity-overlay").classList.remove("hidden");
+    const input = document.getElementById("email-input");
+    if (input) setTimeout(() => input.focus(), 50);
   }
   function hideIdentityGate(){
     document.getElementById("identity-overlay").classList.add("hidden");
@@ -1003,9 +1051,10 @@
     toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
   }
 
-  async function chooseCompany(company){
+  function logInAs(email, company){
+    currentEmail = email;
     currentCompany = company;
-    await saveCompanyPref();
+    saveCompanyPref();
     hideIdentityGate();
     showWelcomeToast(company, false);
     renderAll();
@@ -1302,7 +1351,6 @@
       banner.style.cssText = "position:fixed;top:0;left:0;right:0;background:#B23A2E;color:#fff;text-align:center;padding:8px;font:600 12.5px 'JetBrains Mono',monospace;z-index:999;";
       document.body.prepend(banner);
     }
-    renderIdentityGrid();
     await loadShortlists();
     loadCompanyPref();
     renderAll();

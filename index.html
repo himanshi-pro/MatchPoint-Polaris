@@ -53,9 +53,13 @@
 <div class="identity-overlay hidden" id="identity-overlay">
   <div class="identity-card">
     <p class="identity-eyebrow">The Polaris Fellowship Dashboard</p>
-    <h2>Who are you?</h2>
-    <p class="identity-sub" id="identity-sub">Select your company to see and manage its shortlist.</p>
-    <div class="identity-grid" id="identity-grid"></div>
+    <h2>Sign in</h2>
+    <p class="identity-sub" id="identity-sub">Enter your email to access the dashboard.</p>
+    <form class="email-login-form" id="email-login-form">
+      <input type="email" id="email-input" class="email-input" placeholder="you@company.com" autocomplete="email" required>
+      <button type="submit" class="identity-btn email-submit">Continue</button>
+      <p class="email-error" id="email-error"></p>
+    </form>
   </div>
 </div>
 
