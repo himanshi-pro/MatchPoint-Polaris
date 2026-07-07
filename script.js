@@ -968,8 +968,14 @@
 
   function renderCompanyGreeting(){
     const el = document.getElementById("company-greeting");
-    if (!currentCompany) { el.innerHTML = ""; return; }
+    const exitBtn = document.getElementById("exit-btn");
+    if (!currentCompany) {
+      el.innerHTML = "";
+      if (exitBtn) exitBtn.classList.add("hidden");
+      return;
+    }
     el.innerHTML = `<span class="wave">👋</span> Hello, <b>${escapeHtml(titleCase(currentCompany))}</b>`;
+    if (exitBtn) exitBtn.classList.remove("hidden");
   }
 
   /* ---------------- Email login gate ---------------- */
@@ -1035,6 +1041,8 @@
     if (!seen) showHowTo();
   }
 
+  document.getElementById("exit-btn").addEventListener("click", logOut);
+
   document.getElementById("help-fab").addEventListener("click", showHowTo);
   document.getElementById("howto-close").addEventListener("click", () => {
     hideHowTo();
@@ -1059,6 +1067,18 @@
     showWelcomeToast(company, false);
     renderAll();
     maybeShowHowToOnce();
+  }
+
+  function logOut(){
+    currentEmail = null;
+    currentCompany = null;
+    try { localStorage.removeItem(EMAIL_PREF_KEY); } catch (e) { /* ignore */ }
+    const input = document.getElementById("email-input");
+    if (input) input.value = "";
+    const errEl = document.getElementById("email-error");
+    if (errEl) errEl.textContent = "";
+    renderAll();
+    showIdentityGate();
   }
 
   function getFilteredSortedStudents(){

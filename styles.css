@@ -73,12 +73,32 @@ body{
   letter-spacing:-0.01em;
 }
 .brand-title .brand-accent{ color: var(--amber); }
+.greeting-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
 .company-greeting{
   font-family:'Inter',sans-serif; font-size:14.5px; color: rgba(247,245,239,0.75);
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:8px; margin:0;
 }
 .company-greeting b{ color: var(--amber); font-weight:700; }
 .company-greeting .wave{ font-size:16px; }
+.exit-btn{
+  font-family:'Inter',sans-serif; font-weight:600; font-size:12.5px;
+  color: rgba(247,245,239,0.75);
+  background: transparent;
+  border: 1px solid rgba(247,245,239,0.25);
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.exit-btn:hover{
+  background: rgba(247,245,239,0.08);
+  border-color: rgba(247,245,239,0.45);
+  color: #F7F5EF;
+}
+.exit-btn.hidden{ display:none; }
 
 /* ===== Layout ===== */
 .page{ padding: 26px 28px 70px; }
