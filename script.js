@@ -877,25 +877,12 @@
     return null;
   }
 
-  const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of inactivity
-  const LAST_ACTIVE_KEY = "polaris_r3_last_active";
-
   function loadCompanyPref(){
     try {
       const v = localStorage.getItem(COMPANY_PREF_KEY);
-      const lastActiveRaw = localStorage.getItem(LAST_ACTIVE_KEY);
-      const lastActive = lastActiveRaw ? parseInt(lastActiveRaw, 10) : 0;
-      const expired = !lastActive || (Date.now() - lastActive) > SESSION_TIMEOUT_MS;
-
-      if (v && COMPANIES.includes(v) && !expired) {
+      if (v && COMPANIES.includes(v)) {
         currentCompany = v;
-        touchActivity(); // extend the session now that they're back
         return true;
-      }
-      if (v && expired) {
-        // Session timed out — clear it so the gate shows fresh, not stale.
-        localStorage.removeItem(COMPANY_PREF_KEY);
-        localStorage.removeItem(LAST_ACTIVE_KEY);
       }
     } catch (e) { /* localStorage unavailable (e.g. private mode) — identity just won't persist */ }
     return false;
@@ -904,34 +891,8 @@
   function saveCompanyPref(){
     try {
       localStorage.setItem(COMPANY_PREF_KEY, currentCompany);
-      localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()));
     } catch (e) { /* ignore */ }
   }
-
-  /** Call on this  any real user interaction to keep the 30-minute session alive. */
-  let lastActivityWrite = 0;
-  function touchActivity(){
-    if (!currentCompany) return;
-    const now = Date.now();
-    if (now - lastActivityWrite < 15000) return; // throttle localStorage writes to ~1/15s
-    lastActivityWrite = now;
-    try { localStorage.setItem(LAST_ACTIVE_KEY, String(now)); } catch (e) { /* ignore */ }
-  }
-
-  /** Runs periodically; signs the company out only after 30 real minutes of no clicks/keys. */
-  function checkSessionTimeout(){
-    if (!currentCompany) return;
-    try {
-      const lastActiveRaw = localStorage.getItem(LAST_ACTIVE_KEY);
-      const lastActive = lastActiveRaw ? parseInt(lastActiveRaw, 10) : Date.now();
-      if (Date.now() - lastActive > SESSION_TIMEOUT_MS) {
-        exitCompany("timeout");
-      }
-    } catch (e) { /* ignore */ }
-  }
-
-  document.addEventListener("click", touchActivity, { passive: true });
-  document.addEventListener("keydown", touchActivity, { passive: true });
 
   function shortlistersFor(studentId){
     return shortlists[studentId] || [];
@@ -977,27 +938,7 @@
   function renderCompanyGreeting(){
     const el = document.getElementById("company-greeting");
     if (!currentCompany) { el.innerHTML = ""; return; }
-    el.innerHTML = `<span class="wave">👋</span> Hello, <b>${escapeHtml(titleCase(currentCompany))}</b> <button id="exit-btn" class="exit-link">Exit</button>`;
-    const exitBtn = document.getElementById("exit-btn");
-    if (exitBtn) exitBtn.addEventListener("click", () => exitCompany());
-  }
-
-  /**
-   * Signs the current company out and shows the "who are you?" gate again.
-   * Only clears which company is "logged in" on this browser — shortlist
-   * data itself lives in the shared backend and is never touched here, so if
-   * the same company (or any other) picks up again later, their previous
-   * choices are exactly as they left them.
-   */
-  function exitCompany(reason){
-    const wasTimeout = reason === "timeout";
-    currentCompany = null;
-    try {
-      localStorage.removeItem(COMPANY_PREF_KEY);
-      localStorage.removeItem(LAST_ACTIVE_KEY);
-    } catch (e) { /* ignore */ }
-    renderAll();
-    showIdentityGate(wasTimeout ? "Your session timed out after 30 minutes of inactivity — please sign in again." : null);
+    el.innerHTML = `<span class="wave">👋</span> Hello, <b>${escapeHtml(titleCase(currentCompany))}</b>`;
   }
 
   /* ---------------- Identity gate + welcome toast ---------------- */
@@ -1374,7 +1315,6 @@
     }
     setInterval(pollShortlists, 4000);
     setInterval(pollSheetData, REFRESH_MS);
-    setInterval(checkSessionTimeout, 60000);
   }
 
   init();

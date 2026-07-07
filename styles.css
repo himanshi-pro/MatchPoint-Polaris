@@ -79,15 +79,6 @@ body{
 }
 .company-greeting b{ color: var(--amber); font-weight:700; }
 .company-greeting .wave{ font-size:16px; }
-.exit-link{
-  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
-  letter-spacing:0.04em; text-transform:uppercase;
-  background: rgba(247,245,239,0.08); color: rgba(247,245,239,0.75);
-  border:1px solid rgba(247,245,239,0.2); border-radius:999px;
-  padding:4px 11px; margin-left:6px; cursor:pointer;
-  transition: all 0.15s ease;
-}
-.exit-link:hover{ background: rgba(178,58,46,0.25); color:#fff; border-color: rgba(178,58,46,0.5); }
 
 /* ===== Layout ===== */
 .page{ padding: 26px 28px 70px; }
@@ -422,7 +413,7 @@ html, body{ overflow-x:hidden; max-width:100%; }
 /* Slightly larger tap targets on touch devices only — desktop mouse
    users see no change. */
 @media (hover:none) and (pointer:coarse){
-  .identity-btn, .shortlist-btn, .link-btn, .co-chip, .exit-link, .help-fab{
+  .identity-btn, .shortlist-btn, .link-btn, .co-chip, .help-fab{
     min-height:44px;
   }
   .shortlist-table td.check-cell{ min-width:44px; }
